@@ -68,7 +68,7 @@ export default function Signup() {
     if (Object.keys(formErrors).length == 0 && isSubmit && emailError === '') {
       console.log('Formvalues:', formValues);
       axios
-        .post('http://localhost:9000/signup', formValues)
+        .post('https://todo-scheduler-backend.vercel.app/signup', formValues)
         .then(() => {
           setOpen(true);
           setDisableSubmit(true);
@@ -81,7 +81,7 @@ export default function Signup() {
   }, [isSubmit]);
   async function checkEmail(email) {
     try {
-      const result = await axios.get(`http://localhost:9000/checkEmail/${email}`, {
+      const result = await axios.get(`https://todo-scheduler-backend.vercel.app/checkEmail/${email}`, {
         headers: {
           'Content-Type': 'application/json'
         }
