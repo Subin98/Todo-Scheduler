@@ -33,10 +33,13 @@ const createTodo = async (req, res) => {
       .then(() => {
         res.status("200").send(true);
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log(e);
         res.status("200").send(false);
       });
   } catch (e) {
+    console.log(e);
+
     res.status("200").send(false);
   }
 };
