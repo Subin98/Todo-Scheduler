@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const workers = require("../models/worker");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
