@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const router = require("./routes/appRoutes");
 
-const Port = 9000;
+const Port = process.env.PORT || 9000;
 const App = express();
 
 // Mandatory express Middlewares
