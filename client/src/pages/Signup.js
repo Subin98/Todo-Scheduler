@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
-import { Alert, Snackbar } from '@mui/material';
+import { Alert, Snackbar, DialogActions, DialogContent, DialogContentText, DialogTitle, Dialog } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { EMPTY } from '../config/constants';
 import { useSelector } from 'react-redux';
@@ -39,6 +39,10 @@ export default function Signup() {
   const [emailError, setEmailError] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [disableSubmit, setDisableSubmit] = React.useState(true);
+  const [error, setError] = React.useState(false);
+  const handleDialogClose = () => {
+    setError(false);
+  };
   function validate(values) {
     const email = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     let errors = {};
@@ -67,16 +71,22 @@ export default function Signup() {
   React.useEffect(() => {
     if (Object.keys(formErrors).length == 0 && isSubmit && emailError === '') {
       console.log('Formvalues:', formValues);
-      axios
-        .post('https://todo-scheduler-backend.vercel.app/signup', formValues)
-        .then(() => {
-          setOpen(true);
-          setDisableSubmit(true);
-          navigate('/login');
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      try {
+        axios
+          .post('https://todo-scheduler-backend.vercel.app/signup', formValues)
+          .then(() => {
+            setOpen(true);
+            setDisableSubmit(true);
+            navigate('/login');
+          })
+          .catch((e) => {
+            setError(true);
+            console.log('Error', e);
+          });
+      } catch (e) {
+        setError(true);
+        console.log('Error', e);
+      }
     }
   }, [isSubmit]);
   async function checkEmail(email) {
@@ -223,6 +233,23 @@ export default function Signup() {
           </Box>
         </Container>
       </ThemeProvider>
+      <Dialog
+        open={error}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">Ooops</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Something went wrong, Please try again later...!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} autoFocus>
+            ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

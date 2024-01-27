@@ -15,6 +15,15 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../state/authenticationSlice';
 import { EMPTY } from '../config/constants';
+import {
+  Backdrop,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from '@mui/material';
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
@@ -35,6 +44,8 @@ export default function SignIn() {
   const [formErrors, setformErrors] = React.useState('');
   const [disableSubmit, setDisableSubmit] = React.useState(true);
   const [loginError, setLoginError] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [error, setError] = React.useState(false);
   const navigate = useNavigate();
   function validate(values) {
     let errors = {};
@@ -58,10 +69,12 @@ export default function SignIn() {
   }, [formValues]);
   React.useEffect(() => {
     if (Object.keys(formErrors) == 0 && isSubmit) {
+      setOpen(true);
       console.log('Formvalues:', formValues);
       axios
         .post('https://todo-scheduler-backend.vercel.app/login', formValues)
         .then((Data) => {
+          setOpen(false);
           console.log(Data);
           const userData = Data.data;
           if (userData) {
@@ -69,106 +82,136 @@ export default function SignIn() {
             dispatch(login(userData));
             navigate('/');
           } else {
+            setOpen(false);
+
             console.log('User not found');
             setLoginError(true);
           }
         })
         .catch((e) => {
-          console.log(e);
+          console.log('ERROR', e);
+          setOpen(false);
+          setError(true);
         });
+      setIsSubmit(false);
     }
   }, [isSubmit]);
+  const handleClose = () => {
+    setError(false);
+  };
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}>
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
-          <Box component="form" noValidate sx={{ mt: 1 }}>
-            <TextField
-              helperText={formErrors.email}
-              error={formErrors.email}
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={formValues.email}
-              onChange={(e) => {
-                let value = e.target.value;
-                setFormValues({ ...formValues, email: value });
-              }}
-            />
-            <TextField
-              helperText={formErrors.password}
-              error={formErrors.password}
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={formValues.password}
-              onChange={(e) => {
-                let value = e.target.value;
-                setFormValues({ ...formValues, password: value });
-              }}
-            />
-            {console.log(loginError)}
-            {loginError ? (
-              <Grid>
-                <Typography variant="subtitle" color={'red'}>
-                  You have entered an invalid username or password
-                </Typography>
+    <>
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={open}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <ThemeProvider theme={defaultTheme}>
+        <Container component="main" maxWidth="xs">
+          <CssBaseline />
+          <Box
+            sx={{
+              marginTop: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}>
+            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign in
+            </Typography>
+            <Box component="form" noValidate sx={{ mt: 1 }}>
+              <TextField
+                helperText={formErrors.email}
+                error={formErrors.email}
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                value={formValues.email}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  setFormValues({ ...formValues, email: value });
+                }}
+              />
+              <TextField
+                helperText={formErrors.password}
+                error={formErrors.password}
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={formValues.password}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  setFormValues({ ...formValues, password: value });
+                }}
+              />
+              {console.log(loginError)}
+              {loginError ? (
+                <Grid>
+                  <Typography variant="subtitle" color={'red'}>
+                    You have entered an invalid username or password
+                  </Typography>
+                </Grid>
+              ) : (
+                ''
+              )}
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={handleSubmit}
+                disabled={disableSubmit}>
+                Login In
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Link href="#" variant="body2">
+                    Forgot password?
+                  </Link>
+                </Grid>
+                <Grid item>
+                  <Link
+                    sx={{ cursor: 'pointer' }}
+                    variant="body2"
+                    onClick={() => {
+                      navigate('/signup');
+                    }}>
+                    {"Don't have an account? Sign Up"}
+                  </Link>
+                </Grid>
               </Grid>
-            ) : (
-              ''
-            )}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              onClick={handleSubmit}
-              disabled={disableSubmit}>
-              Login In
-            </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link
-                  sx={{ cursor: 'pointer' }}
-                  variant="body2"
-                  onClick={() => {
-                    navigate('/signup');
-                  }}>
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
+            </Box>
           </Box>
-        </Box>
-      </Container>
-    </ThemeProvider>
+        </Container>
+      </ThemeProvider>
+      <Dialog
+        open={error}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">Ooops</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Something went wrong, Please try again later...!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            ok
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
