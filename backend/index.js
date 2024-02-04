@@ -3,7 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const router = require("./routes/appRoutes");
-
+const scheduleTask = require("./controllers/cloudSchedule");
 const Port = process.env.PORT || 9000;
 const App = express();
 
@@ -35,3 +35,8 @@ App.listen(Port, (err) => {
     console.log("Connected to server:", Port);
   }
 });
+//Task executes every 5 minutes
+const scheduledJob = scheduleTask();
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+console.log(accountSid, authToken);
