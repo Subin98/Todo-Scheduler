@@ -1,12 +1,24 @@
 import * as React from 'react';
-import { Button, Grid, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  Skeleton,
+  Stack,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { useEffect } from 'react';
 import { Item, minHeight } from '../style/style';
-import { fetchTodos } from '../services/todos/todos';
+import { deleteTodoById, fetchTodos } from '../services/todos/todos';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddIcon from '@mui/icons-material/Add';
+import EditNoteSharpIcon from '@mui/icons-material/EditNoteSharp';
 import { useNavigate } from 'react-router-dom';
 export default function Home() {
   const navigate = useNavigate();
@@ -16,15 +28,30 @@ export default function Home() {
   const token = authentication?.token;
   const [data, setData] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const [deleteOpen, setdeleteOpen] = React.useState(false);
+  const [deleteContent, setDeleteContent] = React.useState({ title: '', completed: '', todoId: '' });
+  const handleDeleteDialogClose = () => {
+    setdeleteOpen(false);
+  };
+  async function fetchData() {
+    const todos = await fetchTodos(userEmail, token);
+    setData(todos);
+    setLoading(false);
+  }
+  const handleDeleteTodo = async () => {
+    const response = await deleteTodoById(deleteContent.todoId, token);
+    if (response) {
+      console.log('response', response);
+      handleDeleteDialogClose();
+      fetchData();
+    } else setDeleteContent('Something went wrong');
+  };
   useEffect(() => {
-    async function fetchData() {
-      const todos = await fetchTodos(userEmail, token);
-      setData(todos);
-      setLoading(false);
-    }
     fetchData();
   }, [userEmail]);
-  console.log(data);
+  const handleEdit = (id) => {
+    navigate('/create-todo', { state: id });
+  };
   return (
     <>
       {loading ? (
@@ -68,11 +95,29 @@ export default function Home() {
                           </div>
                           <div style={minHeight.footer}>
                             <div style={{ width: '50%', display: 'flex', alignItems: 'left' }}>
-                              <Button size="small" color="secondary" endIcon={<DeleteIcon />}></Button>
+                              <Tooltip title={'Delete'}>
+                                <Button
+                                  size="small"
+                                  color="secondary"
+                                  endIcon={<DeleteIcon />}
+                                  onClick={() => {
+                                    setDeleteContent({
+                                      ...deleteContent,
+                                      title: todo?.title,
+                                      completed: todo?.completed,
+                                      todoId: todo?._id
+                                    });
+                                    setdeleteOpen(true);
+                                  }}></Button>
+                              </Tooltip>
                             </div>
                             <div style={{ width: '50%', display: 'flex', justifyContent: 'right' }}>
                               <Typography variant="body2">
-                                <Button size="small" color="secondary" endIcon={<ArrowForwardIcon />}>
+                                <Button
+                                  size="small"
+                                  color="secondary"
+                                  startIcon={<EditNoteSharpIcon />}
+                                  onClick={() => handleEdit(todo._id)}>
                                   Edit
                                 </Button>
                               </Typography>
@@ -91,7 +136,7 @@ export default function Home() {
                 </Grid>
               )}
               <Grid item lg={4} md={4} sm={12} xs={12} style={{ cursor: 'pointer' }}>
-                <Tooltip title="Add New Todo" placement="right">
+                <Tooltip title="Add New Todo" placement="bottom">
                   <Item
                     style={{ backgroundColor: '#ebebeb' }}
                     onClick={() => {
@@ -119,6 +164,29 @@ export default function Home() {
           )}
         </>
       )}
+      <Dialog
+        open={deleteOpen}
+        onClose={handleDeleteDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="responsive-dialog-title">{'Are you sure do you want to delete this task?'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Title: {deleteContent.title}
+            <br />
+            Status:{deleteContent.completed ? 'Completed' : 'Open'}
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions>
+          <Button autoFocus onClick={handleDeleteTodo}>
+            Yes
+          </Button>
+          <Button onClick={handleDeleteDialogClose} autoFocus>
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

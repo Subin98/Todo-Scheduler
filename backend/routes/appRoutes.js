@@ -6,7 +6,13 @@ const {
   checkEmail,
   loginUser,
 } = require("../controllers/controller");
-const { getTodos, createTodo } = require("../controllers/todoController");
+const {
+  getTodos,
+  createTodo,
+  getTodo,
+  updateTodo,
+  deleteTodoById,
+} = require("../controllers/todoController");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 // Middleware for JWT verification
@@ -49,4 +55,8 @@ router.route("/login").post(loginUser);
 
 router.route("/todos/:emailID").get(verifyToken, getTodos);
 router.route("/create-todo").post(verifyToken, createTodo);
+router.route("/update-todo").post(verifyToken, updateTodo);
+router.route("/get-todo/:todoId").get(verifyToken, getTodo);
+router.route("/delete-todo/:todoId").delete(verifyToken, deleteTodoById);
+
 module.exports = router;
